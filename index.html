@@ -168,6 +168,25 @@
 
   .hint { font-weight: 500; font-size: .95rem; opacity: .6; }
 
+  .sound-note { font-weight: 500; font-size: .8rem; opacity: .4; margin-top: -8px; }
+
+  .voice-help-link {
+    display: none;               /* こえが みつからない ときだけ JS で表示 */
+    font-size: .85rem;
+    color: var(--ink);
+    opacity: .55;
+    text-decoration: underline;
+  }
+  .voice-help-link.show { display: inline-block; }
+
+  #help { align-items: stretch; text-align: left; }
+  .help-content { width: 100%; overflow-y: auto; max-height: 72vh; padding-right: 4px; }
+  .help-content h2 { font-size: 1.3rem; margin-bottom: 10px; }
+  .help-content h3 { font-size: 1.05rem; margin: 18px 0 6px; }
+  .help-content p { font-size: .9rem; line-height: 1.6; opacity: .85; }
+  .help-content ol { margin: 6px 0 6px 1.3em; font-size: .9rem; line-height: 1.7; }
+  .help-content .help-note { font-size: .8rem; opacity: .6; margin-top: 4px; }
+
   .version { position: fixed; bottom: 8px; right: 12px; font-size: .75rem; opacity: .4; }
 
   /* ---------- 背景ジャングル ---------- */
@@ -254,6 +273,7 @@
   <div class="script-toggle">
     <button class="btn sel" id="tab-hira" onclick="setScript('hira')">あ<small>ひらがな</small></button>
     <button class="btn" id="tab-kata" onclick="setScript('kata')">ア<small>カタカナ</small></button>
+    <button class="btn" id="tab-hangul" onclick="setScript('hangul')">가<small>ハングル</small></button>
   </div>
 
   <div class="mode-buttons">
@@ -261,9 +281,44 @@
   </div>
 
   <p class="hint">もじを タッチして よんでみよう 🔊</p>
+  <p class="sound-note">🔊 おとが でます</p>
+  <a class="voice-help-link" id="voice-help-link" href="#" onclick="openHelp(); return false;">こえが でないときは</a>
 </section>
 
-<div class="version">v1.5.0</div>
+<!-- ============ ヘルプ（音声のついか） ============ -->
+<section id="help" class="screen">
+  <div class="topbar">
+    <button class="btn" onclick="goHome()" aria-label="ホームへ">🏠</button>
+    <div style="width:64px"></div>
+  </div>
+
+  <div class="help-content">
+    <h2>🔊 こえが でないとき</h2>
+    <p>おうちの かたへ：おつかいの きき（スマートフォン・タブレット）に、その ことばの 「よみあげ おんせい」が はいっていないと、こえが でません。したの てじゅんで ついかしてください。</p>
+
+    <h3>📱 iPhone / iPad（Safari）</h3>
+    <ol>
+      <li>「設定」アプリを開く</li>
+      <li>「アクセシビリティ」→「読み上げコンテンツ」→「声」をタップ</li>
+      <li>一覧から追加したい言語（例：韓国語）を選び、好きな声を選択</li>
+      <li>ダウンロードのアイコン（雲マーク）をタップして音声データをダウンロード</li>
+    </ol>
+    <p class="help-note">見つからない場合は「設定」→「一般」→「言語と地域」→「他の言語を追加」からその言語を追加すると、読み上げの声一覧にも表示されるようになります。</p>
+
+    <h3>🤖 Android</h3>
+    <ol>
+      <li>「設定」アプリを開く</li>
+      <li>「システム」→「言語と入力」→「テキスト読み上げの出力」をタップ<br>（機種により「詳細設定」内にある場合があります）</li>
+      <li>使用エンジンが「Google Text-to-Speech」になっていることを確認</li>
+      <li>エンジン設定の歯車アイコン →「音声データを install」をタップ</li>
+      <li>追加したい言語（例：한국어）を選び、ダウンロード</li>
+    </ol>
+
+    <p class="help-note">音声を追加したあとは、このアプリのページを再読み込みすると反映されます。</p>
+  </div>
+</section>
+
+<div class="version">v1.6.0</div>
 
 <!-- ============ ことばをよむ ============ -->
 <section id="mode2" class="screen">
@@ -556,46 +611,190 @@ const WORDS = {
     { w: "ボクシング",     e: "🥊" },
     { w: "ダーツ",       e: "🎯" },
   ],
+  hangul: [
+    { w: "호랑이",    e: "🐯" },
+    { w: "사자",     e: "🦁" },
+    { w: "곰",      e: "🐻" },
+    { w: "여우",     e: "🦊" },
+    { w: "늑대",     e: "🐺" },
+    { w: "판다",     e: "🐼" },
+    { w: "코알라",    e: "🐨" },
+    { w: "펭귄",     e: "🐧" },
+    { w: "캥거루",    e: "🦘" },
+    { w: "코끼리",    e: "🐘" },
+    { w: "원숭이",    e: "🐵" },
+    { w: "토끼",     e: "🐰" },
+    { w: "고양이",    e: "🐱" },
+    { w: "강아지",    e: "🐶" },
+    { w: "돼지",     e: "🐷" },
+    { w: "소",      e: "🐮" },
+    { w: "양",      e: "🐑" },
+    { w: "닭",      e: "🐔" },
+    { w: "병아리",    e: "🐤" },
+    { w: "오리",     e: "🦆" },
+    { w: "부엉이",    e: "🦉" },
+    { w: "거북이",    e: "🐢" },
+    { w: "개구리",    e: "🐸" },
+    { w: "뱀",      e: "🐍" },
+    { w: "물고기",    e: "🐟" },
+    { w: "문어",     e: "🐙" },
+    { w: "게",      e: "🦀" },
+    { w: "새우",     e: "🦐" },
+    { w: "나비",     e: "🦋" },
+    { w: "벌",      e: "🐝" },
+    { w: "달팽이",    e: "🐌" },
+    { w: "무당벌레",   e: "🐞" },
+    { w: "개미",     e: "🐜" },
+    { w: "다람쥐",    e: "🐿️" },
+    { w: "악어",     e: "🐊" },
+    { w: "사슴",     e: "🦌" },
+    { w: "고래",     e: "🐳" },
+    { w: "돌고래",    e: "🐬" },
+    { w: "얼룩말",    e: "🦓" },
+    { w: "하마",     e: "🦛" },
+    { w: "사과",     e: "🍎" },
+    { w: "딸기",     e: "🍓" },
+    { w: "수박",     e: "🍉" },
+    { w: "귤",      e: "🍊" },
+    { w: "포도",     e: "🍇" },
+    { w: "복숭아",    e: "🍑" },
+    { w: "배",      e: "🍐" },
+    { w: "체리",     e: "🍒" },
+    { w: "달걀",     e: "🥚" },
+    { w: "당근",     e: "🥕" },
+    { w: "양파",     e: "🧅" },
+    { w: "감자",     e: "🥔" },
+    { w: "옥수수",    e: "🌽" },
+    { w: "주먹밥",    e: "🍙" },
+    { w: "국수",     e: "🍜" },
+    { w: "차",      e: "🍵" },
+    { w: "물",      e: "💧" },
+    { w: "밤",      e: "🌰" },
+    { w: "채소",     e: "🥬" },
+    { w: "쌀밥",     e: "🍚" },
+    { w: "바나나",    e: "🍌" },
+    { w: "토마토",    e: "🍅" },
+    { w: "우유",     e: "🥛" },
+    { w: "치즈",     e: "🧀" },
+    { w: "케이크",    e: "🍰" },
+    { w: "아이스크림",  e: "🍦" },
+    { w: "피자",     e: "🍕" },
+    { w: "도넛",     e: "🍩" },
+    { w: "쿠키",     e: "🍪" },
+    { w: "초콜릿",    e: "🍫" },
+    { w: "자동차",    e: "🚗" },
+    { w: "기차",     e: "🚃" },
+    { w: "비행기",    e: "✈️" },
+    { w: "자전거",    e: "🚲" },
+    { w: "소방차",    e: "🚒" },
+    { w: "구급차",    e: "🚑" },
+    { w: "버스",     e: "🚌" },
+    { w: "택시",     e: "🚕" },
+    { w: "트럭",     e: "🚚" },
+    { w: "로켓",     e: "🚀" },
+    { w: "별",      e: "⭐" },
+    { w: "달",      e: "🌙" },
+    { w: "해",      e: "☀️" },
+    { w: "산",      e: "⛰️" },
+    { w: "바다",     e: "🌊" },
+    { w: "벚꽃",     e: "🌸" },
+    { w: "나무",     e: "🌳" },
+    { w: "무지개",    e: "🌈" },
+    { w: "번개",     e: "⚡" },
+    { w: "불",      e: "🔥" },
+    { w: "돌",      e: "🪨" },
+    { w: "나뭇잎",    e: "🍃" },
+    { w: "해바라기",   e: "🌻" },
+    { w: "꽃",      e: "🌷" },
+    { w: "우산",     e: "☂️" },
+    { w: "안경",     e: "👓" },
+    { w: "시계",     e: "⌚" },
+    { w: "가방",     e: "👜" },
+    { w: "신발",     e: "👟" },
+    { w: "모자",     e: "🧢" },
+    { w: "옷",      e: "👕" },
+    { w: "책",      e: "📖" },
+    { w: "연필",     e: "✏️" },
+    { w: "가위",     e: "✂️" },
+    { w: "열쇠",     e: "🔑" },
+    { w: "편지",     e: "✉️" },
+    { w: "돈",      e: "💰" },
+    { w: "풍선",     e: "🎈" },
+    { w: "장난감",    e: "🧸" },
+    { w: "창문",     e: "🪟" },
+    { w: "집",      e: "🏠" },
+    { w: "아기",     e: "👶" },
+    { w: "남자아이",   e: "👦" },
+    { w: "여자아이",   e: "👧" },
+    { w: "할아버지",   e: "👴" },
+    { w: "할머니",    e: "👵" },
+  ],
 };
 
 /* ================= 音声 ================= */
+const SCRIPT_LANG = { hira: "ja-JP", kata: "ja-JP", hangul: "ko-KR" };
+
 let jaVoice = null;
+let koVoice = null;
 function pickVoice() {
   const vs = speechSynthesis.getVoices();
   jaVoice = vs.find(v => v.lang === "ja-JP" && /Kyoko|Google|O-?ren/i.test(v.name))
          || vs.find(v => v.lang && v.lang.startsWith("ja"))
          || null;
+  koVoice = vs.find(v => v.lang === "ko-KR" && /Yuna|Google/i.test(v.name))
+         || vs.find(v => v.lang && v.lang.startsWith("ko"))
+         || null;
+  updateVoiceHelpLink();
 }
 if ("speechSynthesis" in window) {
   pickVoice();
   speechSynthesis.onvoiceschanged = pickVoice;
 }
 
+function voiceFor(lang) {
+  if (lang === "ko-KR") return koVoice;
+  if (lang === "ja-JP") return jaVoice;
+  return null;
+}
+
 function speak(text, { rate = 0.85, pitch = 1.15 } = {}) {
   if (!("speechSynthesis" in window)) return;
   speechSynthesis.cancel();
+  const lang = SCRIPT_LANG[script] || "ja-JP";
   const u = new SpeechSynthesisUtterance(text);
-  u.lang = "ja-JP";
-  if (jaVoice) u.voice = jaVoice;
+  u.lang = lang;
+  const v = voiceFor(lang);
+  if (v) u.voice = v;
   u.rate = rate;
   u.pitch = pitch;
   speechSynthesis.speak(u);
 }
 
 /* ================= 画面遷移 ================= */
-let script = "hira"; // hira | kata
+let script = "hira"; // hira | kata | hangul
 
 function show(id) {
   document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
   document.getElementById(id).classList.add("active");
 }
 function goHome() { speechSynthesis.cancel(); show("home"); }
+function openHelp() { speechSynthesis.cancel(); show("help"); }
+
+const SCRIPT_LABEL = { hira: "ひらがな", kata: "カタカナ", hangul: "한글" };
+
+function updateVoiceHelpLink() {
+  const link = document.getElementById("voice-help-link");
+  const needsVoice = "speechSynthesis" in window && !voiceFor(SCRIPT_LANG[script]);
+  link.classList.toggle("show", needsVoice);
+}
 
 function setScript(s) {
   script = s;
   document.getElementById("tab-hira").classList.toggle("sel", s === "hira");
   document.getElementById("tab-kata").classList.toggle("sel", s === "kata");
-  speak(s === "hira" ? "ひらがな" : "カタカナ");
+  document.getElementById("tab-hangul").classList.toggle("sel", s === "hangul");
+  updateVoiceHelpLink();
+  speak(SCRIPT_LABEL[s]);
 }
 
 /* ================= ことばをよむ ================= */
