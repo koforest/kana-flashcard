@@ -17,6 +17,11 @@
     --grass:  #58C97C;  /* みどり */
     --card:   #FFFFFF;
     --shadow: #C9DEEF;
+    /* 背景ジャングル：そらいろ同系のトーンオントーン（奥→手前） */
+    --jungle-far:   #E3F1FB;
+    --jungle-mid:   #D9ECF8;
+    --jungle-near:  #CFE4F3;
+    --jungle-front: #C2D9EC;
   }
   * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html, body { height: 100%; overscroll-behavior: none; }
@@ -165,6 +170,10 @@
 
   .version { position: fixed; bottom: 8px; right: 12px; font-size: .75rem; opacity: .4; }
 
+  /* ---------- 背景ジャングル ---------- */
+  .bg { position: fixed; inset: 0; z-index: -1; pointer-events: none; overflow: hidden; }
+  .bg svg { width: 100%; height: 100%; display: block; }
+
   /* 「動作を減らす」設定でも演出は消さず、
      大きく弾む動きだけ穏やかなフェードに置き換える */
   @keyframes softpop { from { opacity: .35; } to { opacity: 1; } }
@@ -174,6 +183,69 @@
 </style>
 </head>
 <body>
+
+<!-- ============ 背景ジャングル（同系色・多層シルエット） ============ -->
+<div class="bg" aria-hidden="true">
+  <svg viewBox="0 0 1200 800" preserveAspectRatio="xMidYMax slice" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <path id="blade" d="M0,0 C-9,-45 -9,-125 0,-170 C9,-125 9,-45 0,0 Z"/>
+      <path id="leaf"  d="M0,0 C-48,-50 -62,-150 0,-215 C62,-150 48,-50 0,0 Z"/>
+      <g id="frond">
+        <use href="#blade" transform="rotate(-42)"/>
+        <use href="#blade" transform="rotate(-28)"/>
+        <use href="#blade" transform="rotate(-14)"/>
+        <use href="#blade"/>
+        <use href="#blade" transform="rotate(14)"/>
+        <use href="#blade" transform="rotate(28)"/>
+        <use href="#blade" transform="rotate(42)"/>
+      </g>
+    </defs>
+
+    <!-- 天井から下がるツル（トップコーナーの額縁・ごく淡く） -->
+    <g fill="var(--jungle-mid)" opacity=".5">
+      <use href="#leaf" transform="translate(80,-20) rotate(190) scale(.55)"/>
+      <use href="#leaf" transform="translate(155,-30) rotate(165) scale(.5)"/>
+      <use href="#leaf" transform="translate(1125,-20) rotate(170) scale(.6)"/>
+      <use href="#leaf" transform="translate(1055,-30) rotate(195) scale(.5)"/>
+    </g>
+
+    <!-- 奥のキャノピー（いちばん淡い） -->
+    <g fill="var(--jungle-far)">
+      <path d="M0,800 L0,600 C150,560 300,600 450,585 C620,568 760,610 920,585 C1050,565 1150,590 1200,585 L1200,800 Z"/>
+      <use href="#frond" transform="translate(180,610) rotate(-8) scale(1.1)"/>
+      <use href="#leaf"  transform="translate(430,600) rotate(8)  scale(1.0)"/>
+      <use href="#frond" transform="translate(780,610) rotate(5)  scale(1.15)"/>
+      <use href="#leaf"  transform="translate(1030,600) rotate(-10) scale(1.0)"/>
+    </g>
+
+    <!-- 中景 -->
+    <g fill="var(--jungle-mid)">
+      <path d="M0,800 L0,670 C160,630 320,672 480,650 C650,626 800,668 960,648 C1080,632 1150,660 1200,655 L1200,800 Z"/>
+      <use href="#leaf"  transform="translate(110,668) rotate(-14) scale(1.25)"/>
+      <use href="#frond" transform="translate(330,675) rotate(8)   scale(1.1)"/>
+      <use href="#leaf"  transform="translate(900,668) rotate(10)  scale(1.25)"/>
+      <use href="#frond" transform="translate(1090,675) rotate(-6) scale(1.15)"/>
+    </g>
+
+    <!-- 近景 -->
+    <g fill="var(--jungle-near)">
+      <path d="M0,800 L0,720 C180,690 360,724 540,706 C720,688 900,722 1080,704 C1140,698 1180,708 1200,706 L1200,800 Z"/>
+      <use href="#leaf"  transform="translate(60,715) rotate(-20)  scale(1.5)"/>
+      <use href="#frond" transform="translate(250,720) rotate(6)   scale(1.3)"/>
+      <use href="#frond" transform="translate(600,725) rotate(0)   scale(.95)"/>
+      <use href="#frond" transform="translate(950,720) rotate(-8)  scale(1.35)"/>
+      <use href="#leaf"  transform="translate(1130,715) rotate(18) scale(1.5)"/>
+    </g>
+
+    <!-- 手前の大きな葉（左右の額縁・いちばん濃い） -->
+    <g fill="var(--jungle-front)">
+      <use href="#leaf"  transform="translate(30,800) rotate(-22)  scale(1.9)"/>
+      <use href="#frond" transform="translate(160,800) rotate(-6)  scale(1.7)"/>
+      <use href="#leaf"  transform="translate(1180,800) rotate(22) scale(1.9)"/>
+      <use href="#frond" transform="translate(1050,800) rotate(8)  scale(1.7)"/>
+    </g>
+  </svg>
+</div>
 
 <!-- ============ ホーム ============ -->
 <section id="home" class="screen active">
@@ -191,7 +263,7 @@
   <p class="hint">もじを タッチして よんでみよう 🔊</p>
 </section>
 
-<div class="version">v1.4.0</div>
+<div class="version">v1.5.0</div>
 
 <!-- ============ ことばをよむ ============ -->
 <section id="mode2" class="screen">
