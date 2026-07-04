@@ -165,8 +165,11 @@
 
   .version { position: fixed; bottom: 8px; right: 12px; font-size: .75rem; opacity: .4; }
 
+  /* 「動作を減らす」設定でも演出は消さず、
+     大きく弾む動きだけ穏やかなフェードに置き換える */
+  @keyframes softpop { from { opacity: .35; } to { opacity: 1; } }
   @media (prefers-reduced-motion: reduce) {
-    .pop, .party, #next-word.show { animation: none !important; }
+    .pop, .party, #next-word.show { animation: softpop .35s ease !important; }
   }
 </style>
 </head>
@@ -188,7 +191,7 @@
   <p class="hint">もじを タッチして よんでみよう 🔊</p>
 </section>
 
-<div class="version">v1.2.0</div>
+<div class="version">v1.3.0</div>
 
 <!-- ============ ことばをよむ ============ -->
 <section id="mode2" class="screen">
@@ -593,8 +596,7 @@ function celebrate() {
   emoji.classList.add("party");
   speak(currentWord.w + "!", { rate: 0.9, pitch: 1.2 });
 
-  if (typeof confetti === "function" &&
-      !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+  if (typeof confetti === "function") {
     confetti({ particleCount: 90, spread: 75, origin: { y: 0.55 },
                colors: ["#FFD447", "#FF6B81", "#58C97C", "#7EC8FF"] });
     setTimeout(() => confetti({ particleCount: 50, spread: 100, origin: { y: 0.4 },
