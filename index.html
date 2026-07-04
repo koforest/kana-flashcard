@@ -731,6 +731,8 @@ const WORDS = {
   ],
 };
 
+let script = "hira"; // hira | kata | hangul
+
 /* ================= 音声 ================= */
 const SCRIPT_LANG = { hira: "ja-JP", kata: "ja-JP", hangul: "ko-KR" };
 
@@ -771,8 +773,6 @@ function speak(text, { rate = 0.85, pitch = 1.15 } = {}) {
 }
 
 /* ================= 画面遷移 ================= */
-let script = "hira"; // hira | kata | hangul
-
 function show(id) {
   document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
   document.getElementById(id).classList.add("active");
