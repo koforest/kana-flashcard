@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>あいうえお タッチ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@500;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/canvas-confetti/1.9.3/confetti.browser.min.js"></script>
+<style>
+  :root {
+    --sky:    #EAF6FF;  /* 背景：そらいろ */
+    --ink:    #3A4A6B;  /* 文字：よるのあお */
+    --sun:    #FFD447;  /* きいろ */
+    --berry:  #FF6B81;  /* いちごいろ */
+    --grass:  #58C97C;  /* みどり */
+    --card:   #FFFFFF;
+    --shadow: #C9DEEF;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; overscroll-behavior: none; }
+  body {
+    font-family: 'M PLUS Rounded 1c', sans-serif;
+    background: var(--sky);
+    color: var(--ink);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+    overflow: hidden;
+  }
+
+  /* ---------- 共通ボタン ---------- */
+  .btn {
+    font-family: inherit;
+    font-weight: 800;
+    border: none;
+    border-radius: 28px;
+    cursor: pointer;
+    color: var(--ink);
+    background: var(--card);
+    box-shadow: 0 6px 0 var(--shadow);
+    transition: transform .08s ease, box-shadow .08s ease;
+  }
+  .btn:active { transform: translateY(4px); box-shadow: 0 2px 0 var(--shadow); }
+  .btn:focus-visible { outline: 4px solid var(--berry); outline-offset: 3px; }
+
+  .screen { display: none; flex-direction: column; align-items: center; justify-content: center; gap: 20px; width: 100%; max-width: 560px; padding: 16px; }
+  .screen.active { display: flex; }
+
+  /* ---------- ホーム ---------- */
+  #home h1 {
+    font-size: clamp(2rem, 8vw, 3rem);
+    font-weight: 800;
+    letter-spacing: .1em;
+  }
+  #home h1 span { display: inline-block; }
+  #home h1 .c1 { color: var(--berry); }
+  #home h1 .c2 { color: var(--sun); text-shadow: 0 2px 0 rgba(0,0,0,.08); }
+  #home h1 .c3 { color: var(--grass); }
+
+  .script-toggle { display: flex; gap: 12px; }
+  .script-toggle .btn {
+    font-size: 1.6rem;
+    width: 92px; height: 92px;
+    border-radius: 26px;
+    opacity: .45;
+  }
+  .script-toggle .btn.sel {
+    opacity: 1;
+    background: var(--sun);
+    box-shadow: 0 6px 0 #D9A800;
+  }
+  .script-toggle .btn.sel:active { box-shadow: 0 2px 0 #D9A800; }
+  .script-toggle .btn small { display: block; font-size: .7rem; font-weight: 500; }
+
+  .mode-buttons { display: flex; flex-direction: column; gap: 16px; width: 100%; }
+  .mode-buttons .btn {
+    font-size: 1.5rem;
+    padding: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+  }
+  .mode-buttons .btn .emoji { font-size: 2.2rem; }
+  #btn-start { background: #F0FBF4; }
+
+  /* ---------- 上部バー ---------- */
+  .topbar { display: flex; width: 100%; justify-content: space-between; align-items: center; }
+  .topbar .btn { font-size: 1.5rem; width: 64px; height: 64px; border-radius: 20px; }
+
+  /* ---------- ぷるん アニメ（タイル共通） ---------- */
+  @keyframes jelly {
+    0%   { transform: scale(1,1); }
+    25%  { transform: scale(1.15,.85); }
+    50%  { transform: scale(.9,1.1); }
+    75%  { transform: scale(1.05,.95); }
+    100% { transform: scale(1,1); }
+  }
+
+  /* ---------- ことば ---------- */
+  #word-emoji {
+    font-size: min(30vw, 130px);
+    line-height: 1.2;
+    opacity: .65;                 /* ❔ ミステリー状態 */
+    transition: opacity .3s ease, transform .3s ease;
+  }
+  #word-emoji.revealed { opacity: 1; }
+  #word-emoji.party { animation: bigbounce .8s ease; }
+  @keyframes bigbounce {
+    0%   { transform: scale(1); }
+    30%  { transform: scale(1.5) rotate(-6deg); }
+    55%  { transform: scale(1.2) rotate(5deg); }
+    100% { transform: scale(1); }
+  }
+
+  #word-tiles { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+  .tile {
+    width: min(19vw, 90px);
+    height: min(19vw, 90px);
+    background: var(--card);
+    border-radius: 24px;
+    box-shadow: 0 7px 0 var(--shadow);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: min(11vw, 52px);
+    font-weight: 800;
+    cursor: pointer;
+  }
+  .tile:active { transform: translateY(4px); box-shadow: 0 3px 0 var(--shadow); }
+  .tile.done {
+    background: var(--sun);
+    box-shadow: 0 7px 0 #D9A800;
+  }
+  .tile.pop { animation: jelly .5s ease; }
+
+  #next-word {
+    font-size: 1.6rem;
+    padding: 16px 40px;
+    background: var(--berry);
+    color: #fff;
+    box-shadow: 0 6px 0 #C74557;
+    visibility: hidden;
+  }
+  #next-word:active { box-shadow: 0 2px 0 #C74557; }
+  #next-word.show { visibility: visible; animation: jelly .5s ease; }
+
+  .hint { font-weight: 500; font-size: .95rem; opacity: .6; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .pop, .party, #next-word.show { animation: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ ホーム ============ -->
+<section id="home" class="screen active">
+  <h1><span class="c1">あいうえお</span> <span class="c2">✳</span> <span class="c3">タッチ</span></h1>
+
+  <div class="script-toggle">
+    <button class="btn sel" id="tab-hira" onclick="setScript('hira')">あ<small>ひらがな</small></button>
+    <button class="btn" id="tab-kata" onclick="setScript('kata')">ア<small>カタカナ</small></button>
+  </div>
+
+  <div class="mode-buttons">
+    <button class="btn" id="btn-start" onclick="openMode2()"><span class="emoji">🦒</span> はじめる</button>
+  </div>
+
+  <p class="hint">もじを タッチして よんでみよう 🔊</p>
+</section>
+
+<!-- ============ ことばをよむ ============ -->
+<section id="mode2" class="screen">
+  <div class="topbar">
+    <button class="btn" onclick="goHome()" aria-label="ホームへ">🏠</button>
+    <button class="btn" onclick="nextWord()" aria-label="べつのことば">🔀</button>
+  </div>
+
+  <div id="word-emoji">❔</div>
+  <div id="word-tiles"></div>
+
+  <button class="btn" id="next-word" onclick="nextWord()">つぎへ ▶</button>
+</section>
+
+<script>
+/* ================= データ ================= */
+const WORDS = {
+  hira: [
+    { w: "きりん",  e: "🦒" },
+    { w: "ねこ",    e: "🐱" },
+    { w: "りんご",  e: "🍎" },
+    { w: "うさぎ",  e: "🐰" },
+    { w: "すいか",  e: "🍉" },
+    { w: "ぞう",    e: "🐘" },
+    { w: "たこ",    e: "🐙" },
+    { w: "くるま",  e: "🚗" },
+    { w: "いちご",  e: "🍓" },
+    { w: "ほし",    e: "⭐" },
+    { w: "さかな",  e: "🐟" },
+    { w: "かさ",    e: "☂️" },
+  ],
+  kata: [
+    { w: "ライオン", e: "🦁" },
+    { w: "パンダ",   e: "🐼" },
+    { w: "バナナ",   e: "🍌" },
+    { w: "トマト",   e: "🍅" },
+    { w: "メロン",   e: "🍈" },
+    { w: "コアラ",   e: "🐨" },
+    { w: "ロボット", e: "🤖" },
+    { w: "バス",     e: "🚌" },
+    { w: "ミルク",   e: "🥛" },
+    { w: "ピアノ",   e: "🎹" },
+  ],
+};
+
+/* ================= 音声 ================= */
+let jaVoice = null;
+function pickVoice() {
+  const vs = speechSynthesis.getVoices();
+  jaVoice = vs.find(v => v.lang === "ja-JP" && /Kyoko|Google|O-?ren/i.test(v.name))
+         || vs.find(v => v.lang && v.lang.startsWith("ja"))
+         || null;
+}
+if ("speechSynthesis" in window) {
+  pickVoice();
+  speechSynthesis.onvoiceschanged = pickVoice;
+}
+
+function speak(text, { rate = 0.85, pitch = 1.15 } = {}) {
+  if (!("speechSynthesis" in window)) return;
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = "ja-JP";
+  if (jaVoice) u.voice = jaVoice;
+  u.rate = rate;
+  u.pitch = pitch;
+  speechSynthesis.speak(u);
+}
+
+/* ================= 画面遷移 ================= */
+let script = "hira"; // hira | kata
+
+function show(id) {
+  document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+}
+function goHome() { speechSynthesis.cancel(); show("home"); }
+
+function setScript(s) {
+  script = s;
+  document.getElementById("tab-hira").classList.toggle("sel", s === "hira");
+  document.getElementById("tab-kata").classList.toggle("sel", s === "kata");
+  speak(s === "hira" ? "ひらがな" : "カタカナ");
+}
+
+/* ================= ことばをよむ ================= */
+let wordPool = [];
+let currentWord = null;
+let tappedCount = 0;
+
+function openMode2() {
+  wordPool = [];
+  nextWord();
+  show("mode2");
+}
+
+function nextWord() {
+  if (wordPool.length === 0) {
+    wordPool = [...WORDS[script]].sort(() => Math.random() - 0.5);
+  }
+  currentWord = wordPool.pop();
+  tappedCount = 0;
+
+  const emoji = document.getElementById("word-emoji");
+  emoji.textContent = "❔";              /* 完成するまで正体は隠す */
+  emoji.classList.remove("revealed", "party");
+
+  document.getElementById("next-word").classList.remove("show");
+
+  const tiles = document.getElementById("word-tiles");
+  tiles.innerHTML = "";
+  currentWord.w.split("").forEach((ch, i) => {
+    const t = document.createElement("div");
+    t.className = "tile";
+    t.textContent = ch;
+    t.setAttribute("role", "button");
+    t.onclick = () => tapTile(t, ch);
+    tiles.appendChild(t);
+  });
+}
+
+function tapTile(tile, ch) {
+  tile.classList.remove("pop");
+  void tile.offsetWidth;
+  tile.classList.add("pop");
+  speak(ch);
+
+  if (!tile.classList.contains("done")) {
+    tile.classList.add("done");
+    tappedCount++;
+    if (tappedCount === currentWord.w.length) {
+      setTimeout(celebrate, 700);
+    }
+  }
+}
+
+function celebrate() {
+  const emoji = document.getElementById("word-emoji");
+  emoji.textContent = currentWord.e;    /* ここで正体があらわれる！ */
+  emoji.classList.add("revealed", "party");
+  speak(currentWord.w + "!", { rate: 0.9, pitch: 1.2 });
+
+  if (typeof confetti === "function" &&
+      !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    confetti({ particleCount: 90, spread: 75, origin: { y: 0.55 },
+               colors: ["#FFD447", "#FF6B81", "#58C97C", "#7EC8FF"] });
+    setTimeout(() => confetti({ particleCount: 50, spread: 100, origin: { y: 0.4 },
+               colors: ["#FFD447", "#FF6B81", "#58C97C"] }), 350);
+  }
+
+  document.getElementById("next-word").classList.add("show");
+}
+</script>
+</body>
+</html>
