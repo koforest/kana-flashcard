@@ -234,6 +234,32 @@
     50%      { opacity: 1;   transform: scale(1.25); }
   }
 
+  /* ---------- ことばずかん ---------- */
+  #zukan { align-items: stretch; }
+  .zukan-grid {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(68px, 1fr));
+    gap: 10px;
+    max-height: 76vh;
+    overflow-y: auto;
+    padding: 4px 2px 12px;
+  }
+  .zukan-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    cursor: pointer;
+    background: var(--card);
+    border-radius: 16px;
+    padding: 8px 2px 9px;
+    box-shadow: 0 4px 0 var(--shadow);
+  }
+  .zukan-item:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--shadow); }
+  .zukan-item img { width: 38px; height: 38px; }
+  .zukan-item .label { font-size: .62rem; font-weight: 700; text-align: center; line-height: 1.25; }
+
   #help { align-items: stretch; text-align: left; }
   .help-content { width: 100%; overflow-y: auto; max-height: 72vh; padding-right: 4px; }
   .help-content h2 { font-size: 1.3rem; margin-bottom: 10px; }
@@ -385,12 +411,13 @@
   </div>
 </section>
 
-<div class="version">v1.8.0</div>
+<div class="version">v1.9.0</div>
 
 <!-- ============ ことばをよむ ============ -->
 <section id="mode2" class="screen">
   <div class="topbar">
     <button class="btn" onclick="goHome()" aria-label="ホームへ">🏠</button>
+    <button class="btn" onclick="openZukan()" aria-label="ことばずかん">📚</button>
     <button class="btn" onclick="nextWord()" aria-label="べつのことば">🔀</button>
   </div>
 
@@ -399,6 +426,16 @@
   <p id="word-ja" class="word-ja"></p>
 
   <button class="btn" id="next-word" onclick="nextWord()">つぎへ ▶</button>
+</section>
+
+<!-- ============ ことばずかん（全語一覧・えらんで出題） ============ -->
+<section id="zukan" class="screen">
+  <div class="topbar">
+    <button class="btn" onclick="closeZukan()" aria-label="もどる">↩️</button>
+    <div style="width:64px"></div>
+  </div>
+
+  <div id="zukan-grid" class="zukan-grid"></div>
 </section>
 
 <script>
@@ -880,7 +917,11 @@ function nextWord() {
   if (wordPool.length === 0) {
     wordPool = [...WORDS[script]].sort(() => Math.random() - 0.5);
   }
-  currentWord = wordPool.pop();
+  loadWord(wordPool.pop());
+}
+
+function loadWord(word) {
+  currentWord = word;
   tappedCount = 0;
 
   const emoji = document.getElementById("word-emoji");
@@ -895,7 +936,7 @@ function nextWord() {
 
   const tiles = document.getElementById("word-tiles");
   tiles.innerHTML = "";
-  currentWord.w.split("").forEach((ch, i) => {
+  currentWord.w.split("").forEach((ch) => {
     const t = document.createElement("div");
     t.className = "tile";
     t.textContent = ch;
@@ -904,6 +945,29 @@ function nextWord() {
     tiles.appendChild(t);
   });
 }
+
+/* ================= ことばずかん ================= */
+function openZukan() {
+  const grid = document.getElementById("zukan-grid");
+  grid.innerHTML = "";
+  WORDS[script].forEach(word => {
+    const el = document.createElement("div");
+    el.className = "zukan-item";
+    const code = emojiCode(word.e);
+    const label = word.ja ? `${word.w}（${word.ja}）` : word.w;
+    el.innerHTML = `<img src="emoji/${code}.svg" alt="${word.w}"><span class="label">${label}</span>`;
+    el.onclick = () => selectWord(word);
+    grid.appendChild(el);
+  });
+  show("zukan");
+}
+
+function selectWord(word) {
+  loadWord(word);
+  show("mode2");
+}
+
+function closeZukan() { show("mode2"); }
 
 function tapTile(tile, ch) {
   tile.classList.remove("pop");
